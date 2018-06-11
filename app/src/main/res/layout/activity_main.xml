@@ -88,7 +88,7 @@
         android:id="@+id/pdp"
         android:layout_margin="8dp"
         android:text="Personal Data Protection" />
-        
+
     </LinearLayout>
 
 
