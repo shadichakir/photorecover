@@ -3,12 +3,17 @@ package justforyou.dev.com.photorecover;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -33,43 +38,7 @@ public class RestoredImagesActivity extends AppCompatActivity {
     private InterstitialAd interstitial;
     /** The images. */
     private ArrayList<String> images;
-    public  boolean isReadStoragePermissionGranted() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
 
-                return true;
-            } else {
-
-
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 3);
-                return false;
-            }
-        }
-        else { //permission is automatically granted on sdk<23 upon installation
-
-            return true;
-        }
-    }
-
-    public  boolean isWriteStoragePermissionGranted() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_GRANTED) {
-
-                return true;
-            } else {
-
-
-                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
-                return false;
-            }
-        }
-        else { //permission is automatically granted on sdk<23 upon installation
-
-            return true;
-        }
-    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         try {
@@ -89,6 +58,13 @@ public class RestoredImagesActivity extends AppCompatActivity {
                     displayInterstitial();
                 }
             });
+            if (ContextCompat.checkSelfPermission(RestoredImagesActivity.this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+
+            } else {
+                Intent i = new Intent(RestoredImagesActivity.this,MainActivity.class);
+                startActivity(i);
+            }
             GridView gallery = (GridView) findViewById(R.id.galleryGridView);
 
             gallery.setAdapter(new ImageAdapter(this));
@@ -98,12 +74,7 @@ public class RestoredImagesActivity extends AppCompatActivity {
                 @Override
                 public void onItemClick(AdapterView<?> arg0, View arg1,
                                         int position, long arg3) {
-                    if (null != images && !images.isEmpty())
-                        Toast.makeText(
-                                getApplicationContext(),
-                                "position " + position + " " + images.get(position),
-                                Toast.LENGTH_SHORT).show();
-                    ;
+
 
                 }
             });
@@ -115,28 +86,7 @@ public class RestoredImagesActivity extends AppCompatActivity {
         }
 
     }
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case 2:
 
-                if(grantResults[0]== PackageManager.PERMISSION_GRANTED){
-
-                }else{
-
-                }
-                break;
-
-            case 3:
-                if(grantResults[0]== PackageManager.PERMISSION_GRANTED){
-
-                }else{
-
-                }
-                break;
-        }
-    }
     public void displayInterstitial() {
         if (interstitial.isLoaded()) {
             interstitial.show();

@@ -1,9 +1,18 @@
 package justforyou.dev.com.photorecover;
 
+import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -12,6 +21,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.ads.consent.ConsentForm;
@@ -33,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     InterstitialAd mInterstitialAd;
     private InterstitialAd interstitial;
     Button btnbegin;
+    TextView t1,t2;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         try {
@@ -50,6 +61,12 @@ public class MainActivity extends AppCompatActivity {
                     displayInterstitial();
                 }
             });
+            if (ContextCompat.checkSelfPermission(MainActivity.this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+
+            } else {
+                requestStoragePermission();
+            }
             Button btndpd = findViewById(R.id.pdp);
             btndpd.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -77,8 +94,75 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             });
+            t1 = findViewById(R.id.priv);
+            t1.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String url = "https://sites.google.com/view/justforyou-privacypolicy/accueil";
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setData(Uri.parse(url));
+                    startActivity(i);
+                }
+            });
+            t2 = findViewById(R.id.rat);
+            t2.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Uri uri = Uri.parse("market://details?id=" + getPackageName());
+                    Intent goToMarket = new Intent(Intent.ACTION_VIEW, uri);
+                    // To count with Play market backstack, After pressing back button,
+                    // to taken back to our application, we need to add following flags to intent.
+                    goToMarket.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY |
+                            Intent.FLAG_ACTIVITY_NEW_DOCUMENT |
+                            Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+                    try {
+                        startActivity(goToMarket);
+                    } catch (ActivityNotFoundException e) {
+                        startActivity(new Intent(Intent.ACTION_VIEW,
+                                Uri.parse("http://play.google.com/store/apps/details?id=" + getPackageName())));
+                    }
+                }
+            });
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_LONG).show();
+        }
+    }
+    private void requestStoragePermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)) {
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Permission needed")
+                    .setMessage("This permission is needed because of this and that")
+                    .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ActivityCompat.requestPermissions(MainActivity.this,
+                                    new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
+                        }
+                    })
+                    .setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    })
+                    .create().show();
+
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, STORAGE_PERMISSION_CODE);
+        }
+    }
+    private int STORAGE_PERMISSION_CODE = 1;
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == STORAGE_PERMISSION_CODE)  {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+            } else {
+
+            }
         }
     }
     private boolean isNetworkAvailable() {

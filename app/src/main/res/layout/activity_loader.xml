@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="center_vertical"
+    android:gravity="center"
+    android:orientation="vertical"
+    tools:context=".LoaderActivity">
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/ad_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        app:adSize="BANNER"
+        app:adUnitId="@string/banner_ad_unit_id" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:layout_gravity="center_vertical"
+        android:padding="10dp"
+        >
+
+        <pl.droidsonroids.gif.GifTextView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/loading" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:id="@+id/t1"
+                android:layout_margin="8dp"
+                android:text="جاري الإسترجاع, المرجو الإنتضار." />
+
+
+            <ProgressBar
+                android:id="@+id/circularProgressbar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_centerInParent="true"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:layout_below="@+id/t1"
+                android:layout_marginTop="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                android:progress="50"
+                android:max="100"
+                android:secondaryProgress="100"
+                />
+
+
+            <TextView
+                android:id="@+id/tv"
+                android:layout_below="@+id/circularProgressbar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:gravity="center"
+                android:layout_margin="8dp"
+                android:text="0%"
+                android:textColor="@color/primary_700"
+                android:textSize="20sp" />
+        </RelativeLayout>
+
+
+
+    </LinearLayout>
+</LinearLayout>
