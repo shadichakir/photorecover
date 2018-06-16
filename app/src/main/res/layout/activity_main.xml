@@ -67,8 +67,8 @@
             android:ellipsize="end"
             android:maxLines="1"
             android:layout_margin="8dp"
+            android:id="@+id/privacy"
             android:text="@string/priv"
-            android:id="@+id/priv"
             />
         <TextView
             android:layout_width="wrap_content"
@@ -77,19 +77,10 @@
             android:ellipsize="end"
             android:layout_margin="8dp"
             android:maxLines="1"
-            android:id="@+id/rat"
+            android:id="@+id/rating"
             android:text="@string/rat"
             />
     </LinearLayout>
-    <Button
-        style="@style/Widget.AppCompat.Button.Colored"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-
-        android:id="@+id/pdp"
-        android:layout_margin="8dp"
-        android:text="Personal Data Protection" />
 
     </LinearLayout>
 
