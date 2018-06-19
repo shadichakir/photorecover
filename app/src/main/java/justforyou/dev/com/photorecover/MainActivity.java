@@ -48,100 +48,15 @@ public class MainActivity extends AppCompatActivity {
     private InterstitialAd interstitial;
     Button btnbegin;
     TextView t1,t2;
-    private static final String TAG ="MainActivity ----- : " ;
-    ConsentForm form;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        try {
-            ConsentInformation consentInformation = ConsentInformation.getInstance(MainActivity.this);
-            ConsentInformation.getInstance(MainActivity.this).addTestDevice("62577C087ADC5497524E2FAF2B0E67AE");
-            String[] publisherIds = {"pub-5227911034604828"};
-            consentInformation.requestConsentInfoUpdate(publisherIds, new
-                    ConsentInfoUpdateListener() {
-                        @Override
-                        public void onConsentInfoUpdated(ConsentStatus consentStatus) {
-                            Log.d(TAG,"onConsentInfoUpdated");
-                            switch (consentStatus){
-                                case PERSONALIZED:
-                                    Log.d(TAG,"PERSONALIZED");
-                                    ConsentInformation.getInstance(MainActivity.this)
-                                            .setConsentStatus(ConsentStatus.PERSONALIZED);
-                                    break;
-                                case NON_PERSONALIZED:
-                                    Log.d(TAG,"NON_PERSONALIZED");
-                                    ConsentInformation.getInstance(MainActivity.this)
-                                            .setConsentStatus(ConsentStatus.NON_PERSONALIZED);
-                                    break;
-                                case UNKNOWN:
-                                    Log.d(TAG,"UNKNOWN");
-                                    if(ConsentInformation.getInstance(MainActivity.this).isRequestLocationInEeaOrUnknown()){
-                                        URL privacyUrl = null;
-                                        try {
-                                            privacyUrl = new URL("https://sites.google.com/view/justforyou-privacypolicy/accueil");
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
-                                            // Handle error.
-                                        }
-                                        form = new ConsentForm.Builder(MainActivity.this,
-                                                privacyUrl)
-                                                .withListener(new ConsentFormListener() {
-                                                    @Override
-                                                    public void onConsentFormLoaded() {
-                                                        // Consent form loaded successfully.
-                                                        Log.d(TAG,"onConsentFormLoaded");
-                                                        showform();
-                                                    }
-                                                    @Override
-                                                    public void onConsentFormOpened() {
-                                                        // Consent form was displayed.
-                                                        Log.d(TAG,"onConsentFormOpened");
-                                                    }
-                                                    @Override
-                                                    public void onConsentFormClosed(
-                                                            ConsentStatus consentStatus,
-                                                            Boolean userPrefersAdFree) {
-                                                        // Consent form was closed.
-                                                        Log.d(TAG,"onConsentFormClosed");
-                                                    }
-                                                    @Override
-                                                    public void onConsentFormError(String
-                                                                                           errorDescription) {
-                                                        // Consent form error.
-                                                        Log.d(TAG,"onConsentFormError");
-                                                        Log.d(TAG,errorDescription);
-                                                    }
-                                                })
-                                                .withPersonalizedAdsOption()
-                                                .withNonPersonalizedAdsOption()
-                                                .build();
-                                        form.load();
-                                    } else {
-                                        Log.d(TAG,"PERSONALIZED else");
-                                        ConsentInformation.getInstance(MainActivity.this)
-                                                .setConsentStatus(ConsentStatus.PERSONALIZED);
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                        }
-                        @Override
-                        public void onFailedToUpdateConsentInfo(String errorDescription) {
-                            // User's consent status failed to update.
-                            Log.d(TAG,"onFailedToUpdateConsentInfo");
-                            Log.d(TAG,errorDescription);
-                        }
-                    });
-        } catch (Exception e) {
-            Toast.makeText(getApplicationContext(),e.getMessage(),Toast.LENGTH_SHORT).show();
-        }
         //Admob
+        checkForConsent();
         AdRequest adRequest = new AdRequest.Builder().build();
         // Prepare the Interstitial Ad
-        AdView  mAdView = findViewById(R.id.ad_view);
+        AdView mAdView = findViewById(R.id.ad_view);
         mAdView.loadAd(adRequest);
         interstitial = new InterstitialAd(MainActivity.this);
         interstitial.setAdUnitId(getString(R.string.interstitial_ad_unit_id));
@@ -151,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
                 displayInterstitial();
             }
         });
-
         btnbegin = findViewById(R.id.beginBtn);
         btnbegin.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -214,6 +128,24 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        Button pers =findViewById(R.id.personnal);
+        pers.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (ConsentInformation.getInstance(getBaseContext())
+                        .isRequestLocationInEeaOrUnknown()) {
+                    requestConsent();
+                }else{
+                    Toast.makeText(getApplicationContext(),"This option is available only for European Users",Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        if (ConsentInformation.getInstance(getBaseContext())
+                .isRequestLocationInEeaOrUnknown()) {
+            requestConsent();
+        }else{
+            Toast.makeText(getApplicationContext(),"This option is available only for European Users",Toast.LENGTH_LONG).show();
+        }
     }
     private void showform(){
         if (form!=null){
@@ -224,4 +156,147 @@ public class MainActivity extends AppCompatActivity {
     public void privacyPolicyEvent(){
         dialog.show();
     }
+    //======================================== GDBR ADS ======================
+    private AdView mAdView;
+    private ConsentForm form;
+    private static final String TAG = MainActivity.class.getSimpleName();
+
+
+    private void checkForConsent() {
+        ConsentInformation consentInformation = ConsentInformation.getInstance(MainActivity.this);
+        String[] publisherIds = {"pub-5227911034604828"};
+        consentInformation.requestConsentInfoUpdate(publisherIds, new ConsentInfoUpdateListener() {
+            @Override
+            public void onConsentInfoUpdated(ConsentStatus consentStatus) {
+                // User's consent status successfully updated.
+                switch (consentStatus) {
+                    case PERSONALIZED:
+                        Log.d(TAG, "Showing Personalized ads");
+                        showPersonalizedAds();
+                        break;
+                    case NON_PERSONALIZED:
+                        Log.d(TAG, "Showing Non-Personalized ads");
+                        showNonPersonalizedAds();
+                        break;
+                    case UNKNOWN:
+                        Log.d(TAG, "Requesting Consent");
+                        if (ConsentInformation.getInstance(getBaseContext())
+                                .isRequestLocationInEeaOrUnknown()) {
+                            requestConsent();
+                        } else {
+                            showPersonalizedAds();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            @Override
+            public void onFailedToUpdateConsentInfo(String errorDescription) {
+                // User's consent status failed to update.
+            }
+        });
+    }
+
+    private void requestConsent() {
+        URL privacyUrl = null;
+        try {
+            // TODO: Replace with your app's privacy policy URL.
+            privacyUrl = new URL("  https://sites.google.com/view/justforyou-privacypolicy/accueil");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+            // Handle error.
+        }
+        form = new ConsentForm.Builder(MainActivity.this, privacyUrl)
+                .withListener(new ConsentFormListener() {
+                    @Override
+                    public void onConsentFormLoaded() {
+                        // Consent form loaded successfully.
+                        Log.d(TAG, "Requesting Consent: onConsentFormLoaded");
+                        showForm();
+                    }
+
+                    @Override
+                    public void onConsentFormOpened() {
+                        // Consent form was displayed.
+                        Log.d(TAG, "Requesting Consent: onConsentFormOpened");
+                    }
+
+                    @Override
+                    public void onConsentFormClosed(
+                            ConsentStatus consentStatus, Boolean userPrefersAdFree) {
+                        Log.d(TAG, "Requesting Consent: onConsentFormClosed");
+                        if (userPrefersAdFree) {
+                            // Buy or Subscribe
+                            Log.d(TAG, "Requesting Consent: User prefers AdFree");
+                        } else {
+                            Log.d(TAG, "Requesting Consent: Requesting consent again");
+                            switch (consentStatus) {
+                                case PERSONALIZED:
+                                    showPersonalizedAds();break;
+                                case NON_PERSONALIZED:
+                                    showNonPersonalizedAds();break;
+                                case UNKNOWN:
+                                    showNonPersonalizedAds();break;
+                            }
+
+                        }
+                        // Consent form was closed.
+                    }
+
+                    @Override
+                    public void onConsentFormError(String errorDescription) {
+                        Log.d(TAG, "Requesting Consent: onConsentFormError. Error - " + errorDescription);
+                        // Consent form error.
+                    }
+                })
+                .withPersonalizedAdsOption()
+                .withNonPersonalizedAdsOption()
+                .build();
+        form.load();
+    }
+
+    private void showPersonalizedAds() {
+        //banner
+        mAdView = (AdView) findViewById(R.id.ad_view);
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .build();
+        mAdView.loadAd(adRequest);
+
+    }
+
+    private void showNonPersonalizedAds() {
+
+        //banner
+        mAdView = (AdView) findViewById(R.id.ad_view);
+        AdRequest adRequest = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .addNetworkExtrasBundle(AdMobAdapter.class, getNonPersonalizedAdsBundle())
+                .build();
+        mAdView.loadAd(adRequest);
+
+    }
+
+    public Bundle getNonPersonalizedAdsBundle() {
+        Bundle extras = new Bundle();
+        extras.putString("npa", "1");
+
+        return extras;
+    }
+
+    private void showForm() {
+        if (form == null) {
+            Log.d(TAG, "Consent form is null");
+        }
+        if (form != null) {
+            Log.d(TAG, "Showing consent form");
+            form.show();
+        } else {
+            Log.d(TAG, "Not Showing consent form");
+        }
+    }
+    //==================END ADS GDPR================
+
 }

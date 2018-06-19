@@ -80,6 +80,14 @@
             android:text="@string/rat"
             />
     </LinearLayout>
+        <Button
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:id="@+id/personnal"
+            android:layout_margin="8dp"
+            android:text="Personal Data Protection" />
     </LinearLayout>
 
 </LinearLayout>
